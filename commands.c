@@ -3,7 +3,7 @@
 #include "commands.h"
 //********************************************
 // function name: ExeCmd
-// Description: interperts and executes built-in commands
+ // Description: interperts and executes built-in commands
 // Parameters: pointer to jobs, command string
 // Returns: 0 - success,1 - failure
 //**************************************************************************************
