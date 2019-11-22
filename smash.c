@@ -22,8 +22,10 @@ char lineSize[MAX_LINE_SIZE];
 //**************************************************************************************
 int main(int argc, char *argv[])
 {
-    char cmdString[MAX_LINE_SIZE]; 	   
+    char cmdString[MAX_LINE_SIZE]; 	
 
+	char lpwd[MAX_LINE_SIZE]; // save last pwd
+	getcwd(lpwd, sizeof(lpwd)); // init as current pwd
 	
 	//signal declaretions
 	//NOTE: the signal handlers and the function/s that sets the handler should be found in siganls.c
@@ -48,21 +50,21 @@ int main(int argc, char *argv[])
 	
     	while (1)
     	{
-	 	printf("smash > ");
-		fgets(lineSize, MAX_LINE_SIZE, stdin);
-		strcpy(cmdString, lineSize);    	
-		cmdString[strlen(lineSize)-1]='\0';
-					// perform a complicated Command
-		if(!ExeComp(lineSize)) continue; 
-					// background command	
-	 	if(!BgCmd(lineSize, jobs)) continue; 
-					// built in commands
-		ExeCmd(jobs, lineSize, cmdString);
-		
-		/* initialize for next line read*/
-		lineSize[0]='\0';
-		cmdString[0]='\0';
-	}
+		 	printf("smash > ");
+			fgets(lineSize, MAX_LINE_SIZE, stdin);
+			strcpy(cmdString, lineSize);    	
+			cmdString[strlen(lineSize)-1]='\0';
+						// perform a complicated Command
+			if(!ExeComp(lineSize)) continue; 
+						// background command	
+		 	if(!BgCmd(lineSize, jobs)) continue; 
+						// built in commands
+			ExeCmd(jobs, lineSize, cmdString, &lpwd);
+			
+			/* initialize for next line read*/
+			lineSize[0]='\0';
+			cmdString[0]='\0';
+		}
     return 0;
 }
 

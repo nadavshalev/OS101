@@ -7,11 +7,11 @@
 // Parameters: pointer to jobs, command string
 // Returns: 0 - success,1 - failure
 //**************************************************************************************
-int ExeCmd(void* jobs, char* lineSize, char* cmdString)
+int ExeCmd(void* jobs, char* lineSize, char* cmdString, char* lpwd)
 {
 	char* cmd; 
 	char* args[MAX_ARG];
-	char pwd[MAX_LINE_SIZE]; 
+	char pwd[MAX_LINE_SIZE];
 	char* delimiters = " \t\n";  
 	int i = 0, num_arg = 0;
 	bool illegal_cmd = FALSE; // illegal command
@@ -32,14 +32,32 @@ int ExeCmd(void* jobs, char* lineSize, char* cmdString)
 // MORE IF STATEMENTS AS REQUIRED
 /*************************************************/
 	if (!strcmp(cmd, "cd") ) 
-	{
-		
+	{	
+		//get current dir
+		getcwd(pwd, sizeof(pwd));
+		// if last dir selected
+		if (!strcmp(args[1], "-")){
+			chdir(lpwd);
+		}
+		// if new dir selected
+		else{
+			int failure = chdir(args[1]);
+			// fail to change dir
+			if(failure){
+				printf("'%s' - path not found\n", args[1]);
+				return 0;
+			}
+		}
+
+		// set last dir and dir
+		strncpy(lpwd, pwd, sizeof(pwd));
 	} 
 	
 	/*************************************************/
 	else if (!strcmp(cmd, "pwd")) 
 	{
-		
+		getcwd(pwd, sizeof(pwd));
+		printf("%s\n", pwd);
 	}
 	
 	/*************************************************/
@@ -115,7 +133,7 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString)
 			
 			default:
                 	// Add your code here
-					
+					break;
 					/* 
 					your code
 					*/
