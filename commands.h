@@ -8,12 +8,24 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <iostream> 
+#include <list> 
+#include <iterator> 
+#include <ctime>
 #define MAX_LINE_SIZE 80
 #define MAX_ARG 20
-typedef enum { FALSE , TRUE } bool;
+using namespace std;
+// typedef enum { FALSE , TRUE } bool;
+struct Job
+{
+	int pid;
+	time_t startTime;
+};
+
 int ExeComp(char* lineSize);
-int BgCmd(char* lineSize, void* jobs);
-int ExeCmd(void* jobs, char* lineSize, char* cmdString, char* lpwd);
+int BgCmd(char* lineSize, list<Job*>& jobs);
+int ExeCmd(list<Job*>& jobs, char* lineSize, char* cmdString, char* lpwd);
 void ExeExternal(char *args[MAX_ARG], char* cmdString);
+
 #endif
 
