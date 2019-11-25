@@ -15,7 +15,7 @@
 #define MAX_LINE_SIZE 80
 #define MAX_ARG 20
 using namespace std;
-// typedef enum { FALSE , TRUE } bool;
+
 struct Job
 {
 	int pid;
@@ -24,8 +24,8 @@ struct Job
 
 int ExeComp(char* lineSize);
 int BgCmd(char* lineSize, list<Job*>& jobs);
-int ExeCmd(list<Job*>& jobs, char* lineSize, char* cmdString, char* lpwd);
-void ExeExternal(char *args[MAX_ARG], char* cmdString);
+int ExeCmd(list<Job*>& jobs, char* lineSize, string cmdString, char* lpwd, list<string>& history);
+void ExeExternal(char *args[MAX_ARG], string cmdString);
 
 #endif
 

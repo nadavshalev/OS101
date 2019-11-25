@@ -7,7 +7,7 @@
 // Parameters: pointer to jobs, command string
 // Returns: 0 - success,1 - failure
 //**************************************************************************************
-int ExeCmd(list<Job*>& jobs, char* lineSize, char* cmdString, char* lpwd)
+int ExeCmd(list<Job*>& jobs, char* lineSize, string cmdString, char* lpwd, list<string>& history)
 {
 	char* cmd; 
 	char* args[MAX_ARG];
@@ -19,6 +19,7 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* cmdString, char* lpwd)
 	if (cmd == NULL)
 		return 0; 
    	args[0] = cmd;
+
 	for (i=1; i<MAX_ARG; i++)
 	{
 		args[i] = strtok(NULL, delimiters); 
@@ -26,6 +27,11 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* cmdString, char* lpwd)
 			num_arg++; 
  
 	}
+
+	if (history.size()== 51){
+   	    history.pop_front();
+   	}
+   	history.push_back(cmdString);
 /*************************************************/
 // Built in Commands PLEASE NOTE NOT ALL REQUIRED
 // ARE IN THIS CHAIN OF IF COMMANDS. PLEASE ADD
@@ -69,6 +75,23 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* cmdString, char* lpwd)
 	
 	else if (!strcmp(cmd, "jobs")) 
 	{
+	    list <Job*> :: iterator it;
+        for(it = jobs.begin(); it != jobs.end(); ++it){
+            int status;
+            pid_t result = waitpid((*it)->pid, &status, WNOHANG);
+            cout << "pid:" << (*it)->pid << "\t";
+            if (result == 0) {
+              // Child still alive
+              cout << "alive";
+            } else if (result == -1) {
+              // Error
+              cout << "error";
+            } else {
+              // Child exited
+              cout << "died";
+            }
+            cout << "\n";
+        }
 	}
 	/*************************************************/
 	else if (!strcmp(cmd, "showpid")) 
@@ -84,6 +107,13 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* cmdString, char* lpwd)
 	else if (!strcmp(cmd, "bg")) 
 	{
   		
+	}
+	/*************************************************/
+	else if (!strcmp(cmd, "history"))
+	{
+  		list <string> :: iterator it;
+        for(it = history.begin(); it != --history.end(); ++it)
+            cout << *it << '\n';
 	}
 	/*************************************************/
 	else if (!strcmp(cmd, "quit"))
@@ -109,14 +139,14 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* cmdString, char* lpwd)
 // Parameters: external command arguments, external command string
 // Returns: void
 //**************************************************************************************
-void ExeExternal(char *args[MAX_ARG], char* cmdString)
+void ExeExternal(char *args[MAX_ARG], string cmdString)
 {
 	int pID;
     	switch(pID = fork()) 
 	{
     		case -1: 
 					// Add your code here (error)
-					
+
 					/* 
 					your code
 					*/
@@ -192,6 +222,7 @@ int BgCmd(char* lineSize, list<Job*>& jobs)
 					// Add your code here (error)
 					
 					perror("sume error");
+					break;
         	case 0 :
                 	// Child Process
                		setpgrp();
