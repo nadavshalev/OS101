@@ -7,3 +7,11 @@
    Synopsis: handle the Control-C */
 #include "signals.h"
 
+void signal_Ctrl_Z( int signum ){
+	cout << "ctrl+z\n";
+}
+
+void signal_Ctrl_C( int signum ){
+	cout << "ctrl+c\n";
+	exit(0);
+}

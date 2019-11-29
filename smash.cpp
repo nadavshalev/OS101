@@ -33,17 +33,14 @@ int main(int argc, char *argv[])
 	char lpwd[MAX_LINE_SIZE]; // save last pwd
 	getcwd(lpwd, sizeof(lpwd)); // init as current pwd
 	list <string> history;
-	//signal declaretions
-	//NOTE: the signal handlers and the function/s that sets the handler should be found in siganls.c
-	 /* add your code here */
-	
-	/************************************/
+
 	//NOTE: the signal handlers and the function/s that sets the handler should be found in siganls.c
 	//set your signal handlers here
 	/* add your code here */
 
 	/************************************/
-
+	signal(SIGINT, signal_Ctrl_C);
+	signal(SIGTSTP, signal_Ctrl_Z);
 	/************************************/
 	// Init globals 
 
