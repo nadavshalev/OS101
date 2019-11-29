@@ -139,27 +139,25 @@ void ExeExternal(char *args[MAX_ARG], string cmdString)
     	switch(pID = fork()) 
 	{
     		case -1: 
-					// Add your code here (error)
-
-					/* 
-					your code
-					*/
+					
+					perror("Error while fork");
+					break;
         	case 0 :
                 	// Child Process
                		setpgrp();
-					
-			        // Add your code here (execute an external command)
-					
-					/* 
-					your code
-					*/
+					execvp(args[0], args);
+					perror("Error in child proccess");
+					exit(1);
+					break;
 			
 			default:
-                	// Add your code here
+					// wait for child to finish
+                	int status;
+			    	pid_t result = waitpid(pID, &status, 0);
+			        if (result == -1) {
+			        	perror("Error while waiting for child proccess to end");
+			        }
 					break;
-					/* 
-					your code
-					*/
 	}
 }
 //**************************************************************************************
