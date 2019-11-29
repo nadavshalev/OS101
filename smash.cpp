@@ -58,14 +58,12 @@ int main(int argc, char *argv[])
     	{
 		 	printf("smash > ");
 			fgets(lineSize, MAX_LINE_SIZE, stdin);
-			cmdString = string(lineSize);
-			cmdString[strlen(lineSize)-1]='\0';
 						// perform a complicated Command
 			if(!ExeComp(lineSize)) continue; 
 						// background command	
 		 	if(!BgCmd(lineSize, jobs)) continue; 
 						// built in commands
-			ExeCmd(jobs, lineSize, cmdString, lpwd, history);
+			ExeCmd(jobs, lineSize, lpwd, history);
 			
 			/* initialize for next line read*/
 			lineSize[0]='\0';

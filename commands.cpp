@@ -7,31 +7,36 @@
 // Parameters: pointer to jobs, command string
 // Returns: 0 - success,1 - failure
 //**************************************************************************************
-int ExeCmd(list<Job*>& jobs, char* lineSize, string cmdString, char* lpwd, list<string>& history)
-{
+int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history)
+{			
+	string cmdString = string(lineSize);
 	char* cmd; 
 	char* args[MAX_ARG];
 	char pwd[MAX_LINE_SIZE];
 	char* delimiters = " \t\n";  
 	int i = 0, num_arg = 0;
 	bool illegal_cmd = false; // illegal command
-    	cmd = strtok(lineSize, delimiters);
+
+	// extract command from text-line
+	cmd = strtok(lineSize, delimiters);
 	if (cmd == NULL)
 		return 0; 
    	args[0] = cmd;
-
 	for (i=1; i<MAX_ARG; i++)
 	{
 		args[i] = strtok(NULL, delimiters); 
 		if (args[i] != NULL) 
-			num_arg++; 
- 
+			num_arg++;
 	}
 
-	if (history.size()== 51){
+	// update history buffer
+	if (history.size()== HISTORY_SIZE+1){
    	    history.pop_front();
    	}
    	history.push_back(cmdString);
+
+   	//remove copleted jobs
+   	updateCompleteJobs(jobs);
 /*************************************************/
 // Built in Commands PLEASE NOTE NOT ALL REQUIRED
 // ARE IN THIS CHAIN OF IF COMMANDS. PLEASE ADD
@@ -76,21 +81,10 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, string cmdString, char* lpwd, list<
 	else if (!strcmp(cmd, "jobs")) 
 	{
 	    list <Job*> :: iterator it;
+	    int count = 0;
         for(it = jobs.begin(); it != jobs.end(); ++it){
-            int status;
-            pid_t result = waitpid((*it)->pid, &status, WNOHANG);
-            cout << "pid:" << (*it)->pid << "\t";
-            if (result == 0) {
-              // Child still alive
-              cout << "alive";
-            } else if (result == -1) {
-              // Error
-              cout << "error";
-            } else {
-              // Child exited
-              cout << "died";
-            }
-            cout << "\n";
+            cout << "[" << count+1 << "] " << (*it)->cmd << ": " << (*it)->pid << " " << time(0) - (*it)->startTime << "secs\n";
+            ++count;
         }
 	}
 	/*************************************************/
@@ -203,7 +197,7 @@ int BgCmd(char* lineSize, list<Job*>& jobs)
 	if (lineSize[strlen(lineSize)-2] == '&')
 	{
 		lineSize[strlen(lineSize)-2] = '\0';
-		
+		cout << lineSize << "\n";
 		char* cmd; 
 		char* args[MAX_ARG];
 		char* delimiters = " \t\n";  
@@ -228,6 +222,7 @@ int BgCmd(char* lineSize, list<Job*>& jobs)
                		setpgrp();
 					execvp(cmd, args);
 					perror("Error in background Proccess");
+					printf("smash > ");
 					exit(1);
 					break;
 			
@@ -235,12 +230,27 @@ int BgCmd(char* lineSize, list<Job*>& jobs)
 					Job* jb = new Job;
 					jb->pid = pID;
 					jb->startTime = time(0);
+					jb->cmd = string(lineSize);
             		jobs.push_front(jb);
-
-					break;
+            		return 0;
 		}
 		
 	}
 	return -1;
+}
+
+void updateCompleteJobs(list<Job*>& jobs){
+	list <Job*> :: iterator it;
+	it = jobs.begin();
+    while (it != jobs.end()){
+    	int status;
+    	pid_t result = waitpid((*it)->pid, &status, WNOHANG);
+        if (result != 0) {
+        	// cout << "remove job: " << (*it)->pid << "\n";
+          	jobs.erase(it++);
+        }
+        else
+        	it++;
+    }
 }
 

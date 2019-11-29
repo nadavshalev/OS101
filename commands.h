@@ -14,17 +14,20 @@
 #include <ctime>
 #define MAX_LINE_SIZE 80
 #define MAX_ARG 20
+#define HISTORY_SIZE 50
 using namespace std;
 
 struct Job
 {
 	int pid;
 	time_t startTime;
+	string cmd;
 };
 
+void updateCompleteJobs(list<Job*>& jobs);
 int ExeComp(char* lineSize);
 int BgCmd(char* lineSize, list<Job*>& jobs);
-int ExeCmd(list<Job*>& jobs, char* lineSize, string cmdString, char* lpwd, list<string>& history);
+int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history);
 void ExeExternal(char *args[MAX_ARG], string cmdString);
 
 #endif
