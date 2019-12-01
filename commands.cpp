@@ -92,26 +92,22 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history)
 	{
 	    int signum = -1 * stoi(args[1]);
 	    int jobnum = stoi(args[2]);
-	    cout << signum << jobnum;
 	    if (jobnum > jobs.size()){
-	        printf("‫‪smash‬‬ ‫‪error:‬‬ ‫>‬ ‫‪kill‬‬ ‫‪job‬‬ ‫–‬ ‫‪job‬‬ ‫‪does‬‬ ‫‪not‬‬ ‫‪exist‬‬");
+	        printf("‫‪smash‬‬ ‫‪error:‬‬ ‫>‬ ‫‪kill‬‬ ‫‪job‬‬ ‫–‬ ‫‪job‬‬ ‫‪does‬‬ ‫‪not‬‬ ‫‪exist\n‬‬");
 	    }
 	    else{
             list <Job*> :: iterator it;
-//            next(it, jobnum);
+            it = jobs.begin();
+            for(int i = 1; i < jobnum;++i){
+                ++it;
+            }
             int pid = (*it)->pid;
             int result = kill(pid, signum);
+             cout << "signal " << strsignal(signum) << " was sent to pid " << pid<<"\n" ;
             if (result != 0){
-                printf("‫‪smash‬‬ ‫‪error:‬‬ ‫>‬ ‫‪kill‬‬ ‫‪job‬‬ ‫–‬ ‫‪cannot‬‬ ‫‪send‬‬ ‫‪signal‬‬");
+                printf("‫‪smash‬‬ ‫‪error:‬‬ ‫>‬ ‫‪kill‬‬ ‫‪job‬‬ ‫–‬ ‫‪cannot‬‬ ‫‪send‬‬ ‫‪signal\n‬‬");
             }
         }
-//	    cout << args[0] << args[1] << args[2];
-//	    list <Job*> :: iterator it;
-//	    int count = 0;
-//        for(it = jobs.begin(); it != jobs.end(); ++it){
-//            cout << "[" << count+1 << "] " << (*it)->cmd << ": " << (*it)->pid << " " << time(0) - (*it)->startTime << "secs\n";
-//            ++count;
-//        }
 	}
 	/*************************************************/
 	else if (!strcmp(cmd, "showpid")) 
@@ -119,10 +115,33 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history)
  		printf("smash pid is %d\n", getpid());
 	}
 	/*************************************************/
-	else if (!strcmp(cmd, "fg")) 
+	else if (!strcmp(cmd, "fg"))
 	{
-		
-	} 
+	    list <Job*> :: iterator it;
+	    int pid;
+	    int jobnum;
+	    if(!num_arg)
+	        jobnum=1;
+        else
+	        int jobnum = stoi(args[0]);
+	    it = jobs.begin();
+        for(int i = 1; i < jobnum;++i){
+                ++it;
+        }
+	    pid = (*it)->pid;
+	    if((*it)->stop){
+	        cout << "signal " << strsignal(18) << " was sent to pid " << pid<<"\n" ;
+            kill(pid, SIGCONT);
+            }
+            cout << (*it)->cmd<<"\n";
+            int status;
+            pid_t result = waitpid(pid, &status, 0);
+			        if (result == -1) {
+			        	perror("Error while waiting for child proccess to end");
+			        }
+
+	    }
+
 	/*************************************************/
 	else if (!strcmp(cmd, "bg")) 
 	{
