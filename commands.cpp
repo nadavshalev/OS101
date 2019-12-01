@@ -88,6 +88,32 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history)
         }
 	}
 	/*************************************************/
+	else if (!strcmp(cmd, "kill"))
+	{
+	    int signum = -1 * stoi(args[1]);
+	    int jobnum = stoi(args[2]);
+	    cout << signum << jobnum;
+	    if (jobnum > jobs.size()){
+	        printf("‫‪smash‬‬ ‫‪error:‬‬ ‫>‬ ‫‪kill‬‬ ‫‪job‬‬ ‫–‬ ‫‪job‬‬ ‫‪does‬‬ ‫‪not‬‬ ‫‪exist‬‬");
+	    }
+	    else{
+            list <Job*> :: iterator it;
+//            next(it, jobnum);
+            int pid = (*it)->pid;
+            int result = kill(pid, signum);
+            if (result != 0){
+                printf("‫‪smash‬‬ ‫‪error:‬‬ ‫>‬ ‫‪kill‬‬ ‫‪job‬‬ ‫–‬ ‫‪cannot‬‬ ‫‪send‬‬ ‫‪signal‬‬");
+            }
+        }
+//	    cout << args[0] << args[1] << args[2];
+//	    list <Job*> :: iterator it;
+//	    int count = 0;
+//        for(it = jobs.begin(); it != jobs.end(); ++it){
+//            cout << "[" << count+1 << "] " << (*it)->cmd << ": " << (*it)->pid << " " << time(0) - (*it)->startTime << "secs\n";
+//            ++count;
+//        }
+	}
+	/*************************************************/
 	else if (!strcmp(cmd, "showpid")) 
 	{
  		printf("smash pid is %d\n", getpid());
@@ -244,7 +270,7 @@ void updateCompleteJobs(list<Job*>& jobs){
     	int status;
     	pid_t result = waitpid((*it)->pid, &status, WNOHANG);
         if (result != 0) {
-        	// cout << "remove job: " << (*it)->pid << "\n";
+        	cout << "remove job: " << (*it)->pid << "\n";
           	jobs.erase(it++);
         }
         else
