@@ -19,7 +19,7 @@ using namespace std;
 
 struct Job
 {
-	int pid;
+	int pid=0;
 	time_t startTime;
 	string cmd;
 	bool stop;

@@ -32,7 +32,7 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history)
 	}
 
     cjob.pid = 0;
-    
+
 	// update history buffer
 	if (history.size()== HISTORY_SIZE+1){
    	    history.pop_front();
