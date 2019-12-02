@@ -22,6 +22,7 @@ using namespace std;
 char* L_Fg_Cmd;
 list <Job*> jobs; //This represents the list of jobs. Please change to a preferred type (e.g array of char*)
 char lineSize[MAX_LINE_SIZE];
+Job cjob;
 //**************************************************************************************
 // function name: main
 // Description: main function of smash. get command from user and calls command functions

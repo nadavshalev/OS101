@@ -12,7 +12,6 @@
 #include <iterator> 
 
 using namespace std;
-
 void signal_Ctrl_C( int signum );
 void signal_Ctrl_Z( int signum );
 

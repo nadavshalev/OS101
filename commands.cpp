@@ -7,6 +7,8 @@
 // Parameters: pointer to jobs, command string
 // Returns: 0 - success,1 - failure
 //**************************************************************************************
+extern Job cjob;
+
 int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history)
 {			
 	string cmdString = string(lineSize);
@@ -29,6 +31,8 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history)
 			num_arg++;
 	}
 
+    cjob.pid = 0;
+    
 	// update history buffer
 	if (history.size()== HISTORY_SIZE+1){
    	    history.pop_front();
@@ -133,17 +137,19 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history)
         }
 	    pid = (*it)->pid;
 	    if((*it)->stop){
-	        cout << "signal " << strsignal(18) << " was sent to pid " << pid<<"\n" ;
-            kill(pid, SIGCONT);
-            }
-            cout << (*it)->cmd<<"\n";
-            int status;
-            pid_t result = waitpid(pid, &status, WUNTRACED);
-			        if (result == -1) {
-			        	perror("Error while waiting for child proccess to end");
-			        }
-
-	    }
+        cout << "signal " << strsignal(18) << " was sent to pid " << pid<<"\n" ;
+        kill(pid, SIGCONT);
+        }
+        cout << (*it)->cmd<<"\n";
+        int status;
+        cjob = *(*it);
+        jobs.erase(it++);
+        pid_t result = waitpid(pid, &status, WUNTRACED);
+        if (result == -1) {
+            perror("Error while waiting for child proccess to end");
+        }
+        cjob.pid = 0;
+    }
 
 	/*************************************************/
 	else if (!strcmp(cmd, "bg")) 
@@ -202,9 +208,14 @@ void ExeExternal(char *args[MAX_ARG], string cmdString)
 					// wait for child to finish
                 	int status;
 			    	pid_t result = waitpid(pID, &status, WUNTRACED);
+			    	cjob.pid = pID;
+			    	cjob.cmd = cmdString;
+			    	cjob.startTime = time(0);
+			    	cjob.stop = false;
 			        if (result == -1) {
 			        	perror("Error while waiting for child proccess to end");
 			        }
+                    cjob.pid = 0;
 					break;
 	}
 }
