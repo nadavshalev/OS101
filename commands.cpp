@@ -280,11 +280,7 @@ int ExeComp(char* lineSize)
 	char *args[MAX_ARG];
     if ((strstr(lineSize, "|")) || (strstr(lineSize, "<")) || (strstr(lineSize, ">")) || (strstr(lineSize, "*")) || (strstr(lineSize, "?")) || (strstr(lineSize, ">>")) || (strstr(lineSize, "|&")))
     {
-		// Add your code here (execute a complicated command)
-					
-		/* 
-		your code
-		*/
+		return 0;
 	} 
 	return -1;
 }
