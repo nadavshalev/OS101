@@ -83,7 +83,10 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history)
 	    list <Job*> :: iterator it;
 	    int count = 0;
         for(it = jobs.begin(); it != jobs.end(); ++it){
-            cout << "[" << count+1 << "] " << (*it)->cmd << ": " << (*it)->pid << " " << time(0) - (*it)->startTime << "secs\n";
+            if(!((*it)->stop))
+                cout << "[" << count+1 << "] " << (*it)->cmd << ": " << (*it)->pid << " " << time(0) - (*it)->startTime << "secs\n";
+            else
+                 cout << "[" << count+1 << "] " << (*it)->cmd << ": " << (*it)->pid << " " << time(0) - (*it)->startTime << "secs"<<" (stopped)\n";
             ++count;
         }
 	}
@@ -135,7 +138,7 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history)
             }
             cout << (*it)->cmd<<"\n";
             int status;
-            pid_t result = waitpid(pid, &status, 0);
+            pid_t result = waitpid(pid, &status, WUNTRACED);
 			        if (result == -1) {
 			        	perror("Error while waiting for child proccess to end");
 			        }
@@ -198,7 +201,7 @@ void ExeExternal(char *args[MAX_ARG], string cmdString)
 			default:
 					// wait for child to finish
                 	int status;
-			    	pid_t result = waitpid(pID, &status, 0);
+			    	pid_t result = waitpid(pID, &status, WUNTRACED);
 			        if (result == -1) {
 			        	perror("Error while waiting for child proccess to end");
 			        }
@@ -274,6 +277,7 @@ int BgCmd(char* lineSize, list<Job*>& jobs)
 					jb->pid = pID;
 					jb->startTime = time(0);
 					jb->cmd = string(lineSize);
+					jb->stop = false;
             		jobs.push_front(jb);
             		return 0;
 		}
