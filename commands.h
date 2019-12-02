@@ -26,6 +26,8 @@ struct Job
 };
 
 void updateCompleteJobs(list<Job*>& jobs);
+void quitJob(Job* job, int id);
+void freeJobs(list<Job*> jobs);
 int ExeComp(char* lineSize);
 int BgCmd(char* lineSize, list<Job*>& jobs);
 int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history);

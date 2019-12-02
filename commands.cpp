@@ -82,6 +82,16 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history)
  		
 	}
 	/*************************************************/
+	else if (!strcmp(cmd, "mv"))
+	{
+        int result = rename(args[1], args[2]);
+        if(result == 0)
+            cout << args[1] << " has been renamed to " << args[2] << "\n";
+        else
+            perror("can't rename file");
+
+	}
+	/*************************************************/
 	
 	else if (!strcmp(cmd, "jobs")) 
 	{
@@ -142,9 +152,9 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history)
             kill(pid, SIGCONT);
         }
         cout << (*it)->cmd<<"\n";
-        cout <<args[1] <<"\n";
         int status;
         cjob = *(*it);
+        free((*it));
         jobs.erase(it++);
         pid_t result = waitpid(pid, &status, WUNTRACED);
         if (result == -1) {
@@ -195,7 +205,16 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history)
 	/*************************************************/
 	else if (!strcmp(cmd, "quit"))
 	{
-   		
+	    if(num_arg > 0 && !strcmp(args[1],"kill")){
+	        list <Job*> :: iterator it;
+	        int id = 0;
+	        for(it = jobs.begin(); it != jobs.end(); ++it){
+                quitJob((*it),id+1);
+                id++;
+            }
+	    }
+	    freeJobs(jobs);
+	    exit(0);
 	} 
 	/*************************************************/
 	else // external command
@@ -203,7 +222,7 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history)
  		ExeExternal(args, cmdString);
 	 	return 0;
 	}
-	if (illegal_cmd == true)
+	if (illegal_cmd)
 	{
 		printf("smash error: > \"%s\"\n", cmdString);
 		return 1;
@@ -284,7 +303,6 @@ int BgCmd(char* lineSize, list<Job*>& jobs)
 	if (lineSize[strlen(lineSize)-2] == '&')
 	{
 		lineSize[strlen(lineSize)-2] = '\0';
-		cout << lineSize << "\n";
 		char* cmd; 
 		char* args[MAX_ARG];
 		char* delimiters = " \t\n";  
@@ -310,6 +328,7 @@ int BgCmd(char* lineSize, list<Job*>& jobs)
 					execvp(cmd, args);
 					perror("Error in background Proccess");
 					printf("smash > ");
+	                freeJobs(jobs);
 					exit(1);
 					break;
 			
@@ -335,10 +354,37 @@ void updateCompleteJobs(list<Job*>& jobs){
     	pid_t result = waitpid((*it)->pid, &status, WNOHANG);
         if (result != 0) {
         	cout << "remove job: " << (*it)->pid << "\n";
+            free((*it));
           	jobs.erase(it++);
         }
         else
         	it++;
+    }
+}
+
+void quitJob(Job* job, int id){
+    kill(job->pid, SIGTERM);
+    if(id > 0)
+        cout << "[" << id << "] " << job->cmd << " - Sending SIGTERM...";
+    time_t sTime = time(0);
+    // wait to terminate
+    int pStat = 0, status;
+    while(pStat == 0){
+        pStat = waitpid(job->pid, &status, WNOHANG);
+        if (time(0)-sTime > 5){
+            if(id > 0)
+                cout << "(5 seconds passed) Sending SIGKILL...";
+            kill(job->pid, SIGKILL);
+            break;
+        }
+    }
+    cout << "Done.\n";
+}
+
+void freeJobs(list<Job*> jobs){
+    list <Job*> :: iterator it;
+    for(it = jobs.begin(); it != jobs.end(); ++it){
+       free((*it));
     }
 }
 

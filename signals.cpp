@@ -29,6 +29,8 @@ void signal_Ctrl_Z( int signum ){
 }
 
 void signal_Ctrl_C( int signum ){
-	cout << "ctrl+c\n";
-	exit(0);
+	if (cjob.pid != 0){
+        cout << "signal SIGINT was sent to pid " << cjob.pid <<"\n" ;
+        kill(cjob.pid, SIGINT);
+    }
 }
