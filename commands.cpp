@@ -12,6 +12,7 @@ extern Job cjob;
 int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history)
 {			
 	string cmdString = string(lineSize);
+	cmdString = cmdString.substr(0, cmdString.size()-1);
 	char* cmd; 
 	char* args[MAX_ARG];
 	char pwd[MAX_LINE_SIZE];
@@ -88,9 +89,9 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history)
 	    int count = 0;
         for(it = jobs.begin(); it != jobs.end(); ++it){
             if(!((*it)->stop))
-                cout << "[" << count+1 << "] " << (*it)->cmd << ": " << (*it)->pid << " " << time(0) - (*it)->startTime << "secs\n";
+                cout << "[" << count+1 << "] " << (*it)->cmd << " " << (*it)->pid << " " << time(0) - (*it)->startTime << " secs\n";
             else
-                 cout << "[" << count+1 << "] " << (*it)->cmd << ": " << (*it)->pid << " " << time(0) - (*it)->startTime << "secs"<<" (stopped)\n";
+                cout << "[" << count+1 << "] " << (*it)->cmd << " " << (*it)->pid << " " << time(0) - (*it)->startTime << " secs"<<" (stopped)\n";
             ++count;
         }
 	}
@@ -130,17 +131,18 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history)
 	    if(!num_arg)
 	        jobnum=1;
         else
-	        int jobnum = stoi(args[0]);
+	         jobnum = stoi(args[1]);
 	    it = jobs.begin();
         for(int i = 1; i < jobnum;++i){
-                ++it;
+            ++it;
         }
 	    pid = (*it)->pid;
 	    if((*it)->stop){
-        cout << "signal " << strsignal(18) << " was sent to pid " << pid<<"\n" ;
-        kill(pid, SIGCONT);
+            cout << "signal SIGCONT was sent to pid " << pid<<"\n" ;
+            kill(pid, SIGCONT);
         }
         cout << (*it)->cmd<<"\n";
+        cout <<args[1] <<"\n";
         int status;
         cjob = *(*it);
         jobs.erase(it++);
@@ -154,7 +156,34 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history)
 	/*************************************************/
 	else if (!strcmp(cmd, "bg")) 
 	{
-  		
+  		list <Job*> :: iterator it;
+	    int pid;
+	    int jobnum;  it = jobs.begin();
+	    bool isOK = false;
+	    if(!num_arg){
+	        for(it = jobs.begin(); it != jobs.end(); ++it){
+	            if((*it)->stop){
+	                isOK = true;
+	                break;
+                }
+	        }
+	    }
+        else{
+	        int jobnum = stoi(args[1]);
+            for(int i = 1; i < jobnum;++i){
+                ++it;
+            }
+            if ((*it)->stop)
+                isOK = true;
+        }
+        if(isOK){
+            pid = (*it)->pid;
+            cout << "signal SIGCONT was sent to pid " << pid<<"\n" ;
+            kill(pid, SIGCONT);
+            (*it)->stop = false;
+            cout << (*it)->cmd << "\n";
+            int status;
+        }
 	}
 	/*************************************************/
 	else if (!strcmp(cmd, "history"))
@@ -207,11 +236,12 @@ void ExeExternal(char *args[MAX_ARG], string cmdString)
 			default:
 					// wait for child to finish
                 	int status;
-			    	pid_t result = waitpid(pID, &status, WUNTRACED);
-			    	cjob.pid = pID;
-			    	cjob.cmd = cmdString;
+                	cjob.pid = pID;
+			    	cjob.cmd = cmdString.substr(0, cmdString.size()-1);
 			    	cjob.startTime = time(0);
 			    	cjob.stop = false;
+			    	pid_t result = waitpid(pID, &status, WUNTRACED);
+
 			        if (result == -1) {
 			        	perror("Error while waiting for child proccess to end");
 			        }

@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 	char lpwd[MAX_LINE_SIZE]; // save last pwd
 	getcwd(lpwd, sizeof(lpwd)); // init as current pwd
 	list <string> history;
-
+    cjob.cmd = "qweqwe";
 	//NOTE: the signal handlers and the function/s that sets the handler should be found in siganls.c
 	//set your signal handlers here
 	/* add your code here */

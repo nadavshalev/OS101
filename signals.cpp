@@ -7,21 +7,24 @@
    Synopsis: handle the Control-C */
 #include "signals.h"
 #include "commands.h"
+
 extern Job cjob;
 extern list <Job*> jobs;
 
 void signal_Ctrl_Z( int signum ){
-    cout << "SIGSTOP\n";
-    if (!cjob.pid){
-        cout << cjob.pid << " | " << cjob.cmd << " |\n";
-//        int result = kill(cjob.pid, SIGSTOP);
-//        if(result){
-//            Job* jb = new Job;
-//            *jb = cjob;
-//            jb->stop = true;
-//            cjob.pid = 0;
-//            jobs.push_front(jb);
-//        }
+    if (cjob.pid != 0){
+        cout << "signal SIGSTOP was sent to pid " << cjob.pid <<"\n" ;
+        int result = kill(cjob.pid, SIGSTOP);
+        if(result == 0){
+            Job* jb = new Job;
+            *jb = cjob;
+            jb->stop = true;
+            cjob.pid = 0;
+//            cout << "jb: "<< jb->pid << " | " << jb->cmd << " |\n";
+            jobs.push_front(jb);
+        }
+        else
+            perror("SIGSTOP failed");
     }
 }
 
