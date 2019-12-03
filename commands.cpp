@@ -107,9 +107,9 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history)
             int count = 0;
             for(it = jobs.begin(); it != jobs.end(); ++it){
                 if(!((*it)->stop))
-                    cout << "[" << count+1 << "] " << (*it)->cmd << " " << (*it)->pid << " " << time(0) - (*it)->startTime << " secs\n";
+                    cout << "[" << count+1 << "] " << (*it)->cmd << " : " << (*it)->pid << " " << time(0) - (*it)->startTime << " secs\n";
                 else
-                    cout << "[" << count+1 << "] " << (*it)->cmd << " " << (*it)->pid << " " << time(0) - (*it)->startTime << " secs"<<" (stopped)\n";
+                    cout << "[" << count+1 << "] " << (*it)->cmd << " : " << (*it)->pid << " " << time(0) - (*it)->startTime << " secs"<<" (stopped)\n";
                 ++count;
             }
         }
@@ -121,23 +121,27 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history)
 	else if (!strcmp(cmd, "kill"))
 	{
 	    try {
+	        if (num_arg > 2){
+                cout << "smash error: > \"" << cmdString << "\"\n";
+                return 0;
+            }
             int signum = -1 * stoi(args[1]);
             int jobnum = stoi(args[2]);
             if (jobnum > jobs.size()){
-                printf("‫‪smash‬‬ ‫‪error:‬‬ ‫>‬ ‫‪kill‬‬ ‫‪job‬‬ ‫–‬ ‫‪job‬‬ ‫‪does‬‬ ‫‪not‬‬ ‫‪exist\n‬‬");
+                cout << "‫‪smash‬‬ ‫‪error:‬‬ ‫>‬ ‫‪kill‬‬ " << jobnum << " ‫–‬ ‫‪job‬‬ ‫‪does‬‬ ‫‪not‬‬ ‫‪exist\n‬‬";
+                return 0;
             }
-            else{
-                list <Job*> :: iterator it;
-                it = jobs.begin();
-                for(int i = 1; i < jobnum;++i){
-                    ++it;
-                }
-                int pid = (*it)->pid;
-                int result = kill(pid, signum);
-                 cout << "signal " << strsignal(signum) << " was sent to pid " << pid<<"\n" ;
-                if (result != 0){
-                    printf("‫‪smash‬‬ ‫‪error:‬‬ ‫>‬ ‫‪kill‬‬ ‫‪job‬‬ ‫–‬ ‫‪cannot‬‬ ‫‪send‬‬ ‫‪signal\n‬‬");
-                }
+
+            list <Job*> :: iterator it;
+            it = jobs.begin();
+            for(int i = 1; i < jobnum;++i){
+                ++it;
+            }
+            int pid = (*it)->pid;
+            int result = kill(pid, signum);
+             cout << "signal " << strsignal(signum) << " was sent to pid " << pid<<"\n" ;
+            if (result != 0){
+                printf("‫‪smash‬‬ ‫‪error:‬‬ ‫>‬ ‫‪kill‬‬ ‫‪job‬‬ ‫–‬ ‫‪cannot‬‬ ‫‪send‬‬ ‫‪signal\n‬‬");
             }
         }
         catch (const exception& e) {
@@ -155,6 +159,10 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history)
 	/*************************************************/
 	else if (!strcmp(cmd, "fg"))
 	{
+        if (num_arg > 1){
+            cout << "smash error: > \"" << cmdString << "\"\n";
+            return 0;
+        }
 	    list <Job*> :: iterator it;
 	    int pid;
 	    int jobnum;
@@ -166,11 +174,21 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history)
             }
             catch(const std::exception& e){
                 cout << "smash error: > \"" << cmdString << "\"\n";
+                return 0;
             }
          }
+
+        if (jobnum > jobs.size()){
+            cout << "‫‪smash‬‬ ‫‪error:‬‬ ‫>‬ bg " << jobnum << " ‫–‬ ‫‪job‬‬ ‫‪does‬‬ ‫‪not‬‬ ‫‪exist\n‬‬";
+            return 0;
+        }
 	    it = jobs.begin();
         for(int i = 1; i < jobnum;++i){
             ++it;
+        }
+        if(it == jobs.end()){
+            cout << "smash error: > \"" << cmdString << "\"\n";
+            return 0;
         }
 	    pid = (*it)->pid;
 	    if((*it)->stop){
@@ -192,6 +210,10 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history)
 	/*************************************************/
 	else if (!strcmp(cmd, "bg")) 
 	{
+	    if (num_arg > 1){
+            cout << "smash error: > \"" << cmdString << "\"\n";
+            return 0;
+        }
   		list <Job*> :: iterator it;
 	    int pid;
 	    int jobnum;  it = jobs.begin();
@@ -207,12 +229,15 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history)
         else{
             try{
 	            int jobnum = stoi(args[1]);
-
-            for(int i = 1; i < jobnum;++i){
-                ++it;
-            }
-            if ((*it)->stop)
-                isOK = true;
+                if (jobnum > jobs.size()){
+                    cout << "‫‪smash‬‬ ‫‪error:‬‬ ‫>‬ bg " << jobnum << " ‫–‬ ‫‪job‬‬ ‫‪does‬‬ ‫‪not‬‬ ‫‪exist\n‬‬";
+                    return 0;
+                }
+                for(int i = 1; i < jobnum;++i){
+                    ++it;
+                }
+                if ((*it)->stop)
+                    isOK = true;
             }
             catch(const std::exception& e){
                 cout << "smash error: > \"" << cmdString << "\"\n";
@@ -342,6 +367,7 @@ int BgCmd(char* lineSize, list<Job*>& jobs)
 	if (lineSize[strlen(lineSize)-2] == '&')
 	{
 		lineSize[strlen(lineSize)-2] = '\0';
+		string cmdString = string(lineSize);
 		char* cmd; 
 		char* args[MAX_ARG];
 		char* delimiters = " \t\n";  
@@ -375,9 +401,9 @@ int BgCmd(char* lineSize, list<Job*>& jobs)
 					Job* jb = new Job;
 					jb->pid = pID;
 					jb->startTime = time(0);
-					jb->cmd = string(lineSize);
+					jb->cmd = cmdString.substr(0, cmdString.size()-1);
 					jb->stop = false;
-            		jobs.push_front(jb);
+            		jobs.push_back(jb);
             		return 0;
 		}
 		
@@ -392,7 +418,7 @@ void updateCompleteJobs(list<Job*>& jobs){
     	int status;
     	pid_t result = waitpid((*it)->pid, &status, WNOHANG);
         if (result != 0) {
-        	cout << "remove job: " << (*it)->pid << "\n";
+//        	cout << "remove job: " << (*it)->pid << "\n";
             free((*it));
           	jobs.erase(it++);
         }

@@ -20,8 +20,7 @@ void signal_Ctrl_Z( int signum ){
             *jb = cjob;
             jb->stop = true;
             cjob.pid = 0;
-//            cout << "jb: "<< jb->pid << " | " << jb->cmd << " |\n";
-            jobs.push_front(jb);
+            jobs.push_back(jb);
         }
         else
             perror("SIGSTOP failed");
