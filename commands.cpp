@@ -53,6 +53,10 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history)
             cout << "smash error: > \"" << cmdString << "\"\n";
             return 0;
         }
+        if (num_arg > 1){
+            cout << "smash error: > \"" << cmdString << "\"\n";
+            return 0;
+        }
 		//get current dir
 		getcwd(pwd, sizeof(pwd));
 		// if last dir selected
@@ -64,7 +68,7 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history)
 			int failure = chdir(args[1]);
 			// fail to change dir
 			if(failure){
-                cout << "smash error: > \"" << args[1] << "\" - not found\n";
+                cout << "smash error: > \"" << args[1] << "\" - path not found\n";
 				return 0;
 			}
 		}
@@ -226,6 +230,10 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history)
 	/*************************************************/
 	else if (!strcmp(cmd, "history"))
 	{
+	    if (num_arg > 0){
+            cout << "smash error: > \"" << cmdString << "\"\n";
+            return 0;
+        }
   		list <string> :: iterator it;
         for(it = history.begin(); it != --history.end(); ++it)
             cout << *it << '\n';
