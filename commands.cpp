@@ -4,9 +4,9 @@
 //********************************************
 // function name: ExeCmd
  // Description: interperts and executes built-in commands
-// Parameters: pointer to jobs, command string
+// Parameters: pointer to jobs, command string, last pwd, history
 // Returns: 0 - success,1 - failure
-//**************************************************************************************
+//********************************************
 extern Job cjob;
 
 int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history)
@@ -216,10 +216,12 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history)
         }
   		list <Job*> :: iterator it;
 	    int pid;
-	    int jobnum;  it = jobs.begin();
+	    int jobnum;
 	    bool isOK = false;
 	    if(!num_arg){
-	        for(it = jobs.begin(); it != jobs.end(); ++it){
+	    	it = jobs.end();
+        	while(it != jobs.begin()){
+        		it--;
 	            if((*it)->stop){
 	                isOK = true;
 	                break;
@@ -228,6 +230,7 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history)
 	    }
         else{
             try{
+        	  	it = jobs.begin();
 	            int jobnum = stoi(args[1]);
                 if (jobnum > jobs.size()){
                     cout << "‫‪smash‬‬ ‫‪error:‬‬ ‫>‬ bg " << jobnum << " ‫–‬ ‫‪job‬‬ ‫‪does‬‬ ‫‪not‬‬ ‫‪exist\n‬‬";
@@ -260,6 +263,7 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history)
             return 0;
         }
   		list <string> :: iterator it;
+  		// loop history. doesnt show current command
         for(it = history.begin(); it != --history.end(); ++it)
             cout << *it << '\n';
 	}
@@ -274,6 +278,7 @@ int ExeCmd(list<Job*>& jobs, char* lineSize, char* lpwd, list<string>& history)
 	    if(!strcmp(args[1],"kill")){
 	        list <Job*> :: iterator it;
 	        int id = 0;
+	        // loop all jobs and send kill signals
 	        for(it = jobs.begin(); it != jobs.end(); ++it){
                 quitJob((*it),id+1);
                 id++;
@@ -322,9 +327,10 @@ void ExeExternal(char *args[MAX_ARG], string cmdString)
 			
 			default:
 					// wait for child to finish
+					// add current job
                 	int status;
                 	cjob.pid = pID;
-			    	cjob.cmd = cmdString.substr(0, cmdString.size()-1);
+			    	cjob.cmd = cmdString;
 			    	cjob.startTime = time(0);
 			    	cjob.stop = false;
 			    	pid_t result = waitpid(pID, &status, WUNTRACED);
@@ -398,10 +404,11 @@ int BgCmd(char* lineSize, list<Job*>& jobs)
 					break;
 			
 			default:
+					// add job to list
 					Job* jb = new Job;
 					jb->pid = pID;
 					jb->startTime = time(0);
-					jb->cmd = cmdString.substr(0, cmdString.size()-1);
+					jb->cmd = cmdString;
 					jb->stop = false;
             		jobs.push_back(jb);
             		return 0;
@@ -411,14 +418,19 @@ int BgCmd(char* lineSize, list<Job*>& jobs)
 	return -1;
 }
 
+//********************************************
+// function name: updateCompleteJobs
+ // Description: update and remove Completed Jobs
+// Parameters: jobs list
+//********************************************
 void updateCompleteJobs(list<Job*>& jobs){
 	list <Job*> :: iterator it;
 	it = jobs.begin();
+	// loop all jobs
     while (it != jobs.end()){
     	int status;
     	pid_t result = waitpid((*it)->pid, &status, WNOHANG);
         if (result != 0) {
-//        	cout << "remove job: " << (*it)->pid << "\n";
             free((*it));
           	jobs.erase(it++);
         }
@@ -427,6 +439,11 @@ void updateCompleteJobs(list<Job*>& jobs){
     }
 }
 
+//********************************************
+// function name: quitJob
+// Description: send kill to job
+// Parameters: pointer to job, job id
+//********************************************
 void quitJob(Job* job, int id){
     kill(job->pid, SIGTERM);
     if(id > 0)
@@ -446,6 +463,11 @@ void quitJob(Job* job, int id){
     cout << "Done.\n";
 }
 
+//********************************************
+// function name: freeJobs
+// Description: free Job object data
+// Parameters: pointer to job, job id
+//********************************************
 void freeJobs(list<Job*> jobs){
     list <Job*> :: iterator it;
     for(it = jobs.begin(); it != jobs.end(); ++it){

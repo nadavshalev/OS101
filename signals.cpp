@@ -11,6 +11,11 @@
 extern Job cjob;
 extern list <Job*> jobs;
 
+//********************************************
+// function name: signal_Ctrl_Z
+// Description: control+z handler
+// Parameters: signal number
+//********************************************
 void signal_Ctrl_Z( int signum ){
     if (cjob.pid != 0){
         cout << "\nsignal SIGSTOP was sent to pid " << cjob.pid <<"\n" ;
@@ -27,6 +32,11 @@ void signal_Ctrl_Z( int signum ){
     }
 }
 
+//********************************************
+// function name: signal_Ctrl_C
+// Description: control+c handler
+// Parameters: signal number
+//********************************************
 void signal_Ctrl_C( int signum ){
 	if (cjob.pid != 0){
         cout << "\nsignal SIGINT was sent to pid " << cjob.pid <<"\n" ;
